@@ -82,6 +82,7 @@ class RadioDataModule(pl.LightningDataModule):
         self.prepare_data_per_node = True
         self.args = args
         self.norm = args.__dict__.get('norm', 'micro')
+        self.no_train_data = args.__dict__.get('no_train_data', False)
 
     def prepare_data(self):
         pass
@@ -92,19 +93,22 @@ class RadioDataModule(pl.LightningDataModule):
         train_data = RadioDataset_Train(
             data_dir=pathlib.Path(self.args.data_path) / 'train',
             transform=RadioDataTransform(self.args, test=False),
-            norm=self.norm
+            norm=self.norm,
+            no_train_data=self.no_train_data
         )
 
         dev_data = RadioDataset_Val(
             data_dir=pathlib.Path(self.args.data_path) / 'val',
             transform=RadioDataTransform(self.args, test=True),
-            norm=self.norm
+            norm=self.norm,
+            no_train_data=self.no_train_data
         )    
 
         test_data = RadioDataset_Test(
             data_dir=pathlib.Path(self.args.data_path) / 'test',
             transform=RadioDataTransform(self.args, test=True),
-            norm=self.norm
+            norm=self.norm,
+            no_train_data=self.no_train_data
         )
 
         self.train, self.validate, self.test = train_data, dev_data, test_data
