@@ -37,7 +37,7 @@ See ```docs/mass_mapping.md``` for detailed instructions on how to setup and rep
 
 Alternatively, we have provided a [zenodo file](https://zenodo.org/records/14226221) with the weights of our trained model, as well as a number of simulations. 
 
-Documentation for the RI-GAN method is currently in preparation, but we will provide a similar guide for reproducing the results from our paper on RI-GAN once it is ready. 
+Documentation for reproducing the results using the [RI-GAN method](https://arxiv.org/abs/2507.21270) can be found in ```docs/radio_interferometry.md```. Additionally, the trained models and the data necessary to run them is available on [zenodo](https://zenodo.org/records/16529320)
 
 
 ## Questions and Concerns
@@ -62,10 +62,14 @@ If you find this code helpful, please cite our papers:
     ```
 - **RI-GAN:**
     ```
-    @article{marsGenerativeImagingRadioInterferometry,
-      author = {Mars, Matthijs and Liaudat, Tobías and Whitney, Jessica and McEwen, Jason},
-      title = {Generative imaging for radio interferometry with fast uncertainty quantification},
-      year = {},
-      journal={in prep.}
-    }
-
+  @misc{marsGenerativeImagingRadio2025,
+      title = {Generative Imaging for Radio Interferometry with Fast Uncertainty Quantification},
+      author = {Mars, Matthijs and Liaudat, Tob{\'i}as I. and Whitney, Jessica J. and Betcke, Marta M. and McEwen, Jason D.},
+      year = {2025},
+      number = {arXiv:2507.21270},
+      eprint = {2507.21270},
+      publisher = {arXiv},
+      doi = {10.48550/arXiv.2507.21270},
+      archiveprefix = {arXiv},
+  }
+  ```
