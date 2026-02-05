@@ -12,6 +12,8 @@ from typing import Tuple
 import pathlib
 import torch
 
+import wlmmuq.data.torch as wlds
+
 
 class MMDataTransform:
     def __init__(self, args, test=False, theta=5.0, ngal=30):
@@ -272,3 +274,54 @@ class MMDataModule(pl.LightningDataModule):
             pin_memory=False,
             drop_last=False,
         )
+
+
+class HDF5MMDataModule(pl.LightningDataModule):
+
+    def __init__(self, cfg):
+        super().__init__()
+        self.cfg = cfg
+
+
+    def setup(self, stage: Optional[str] = None):
+
+        self.train_dataset = wlds.HDF5DatasetKappa(
+            hdf5_filepath=self.cfg.path_to_train_val_dataset,
+            nimgs=self.cfg.nimgs_train,
+            output_shape=self.cfg.im_size,
+            newaxis=True
+        )
+        self.val_dataset = wlds.HDF5DatasetKappa(
+            hdf5_filepath=self.cfg.path_to_train_val_dataset,
+            nimgs=self.cfg.nimgs_val,
+            beg_idx=self.cfg.nimgs_train,
+            output_shape=self.cfg.im_size,
+            newaxis=True
+        )
+        self.test_dataset = None
+
+
+    def train_dataloader(self):
+        return DataLoader(
+            self.train_dataset,
+            batch_size=self.cfg.batch_size,
+            num_workers=self.cfg.num_workers,
+            shuffle=True,
+            drop_last=True,
+            pin_memory=True,
+        )
+
+
+    def val_dataloader(self):
+        return DataLoader(
+            self.val_dataset,
+            batch_size=self.cfg.batch_size,
+            num_workers=self.cfg.num_workers,
+            shuffle=False,
+            drop_last=True,
+            pin_memory=True,
+        )
+
+
+    def test_dataloader(self):
+        return None

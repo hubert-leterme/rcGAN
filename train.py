@@ -14,7 +14,7 @@ from utils.parse_args import create_arg_parser
 from models.lightning.rcGAN import rcGAN
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import WandbLogger
-from data.lightning.MassMappingDataModule import MMDataModule
+from data.lightning.MassMappingDataModule import MMDataModule, HDF5MMDataModule
 from data.lightning.RadioDataModule import RadioDataModule
 from models.lightning.mmGAN import mmGAN
 from models.lightning.riGAN import riGAN
@@ -47,6 +47,9 @@ if __name__ == '__main__':
             model = rcGAN(cfg, args.exp_name, args.num_gpus)
         elif cfg.experience == 'mass_mapping':
             dm = MMDataModule(cfg)
+            model = mmGAN(cfg, args.exp_name, args.num_gpus)
+        elif cfg.experience == 'mass_mapping_from_hdf5':
+            dm = HDF5MMDataModule(cfg)
             model = mmGAN(cfg, args.exp_name, args.num_gpus)
         elif cfg.experience == 'radio':
             cfg.num_workers = args.num_gpus # set number of workers to same as gpu
