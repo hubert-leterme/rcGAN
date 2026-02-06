@@ -6,9 +6,10 @@ from data.datasets.MM_data import (
     MassMappingDataset_Test,
     MassMappingDataset_Train,
     MassMappingDataset_Val,
+    HDF5MassMappingDataset
 )
 from mass_map_utils.scripts import transforms
-from typing import Tuple
+from typing import Tuple, Union
 import pathlib
 import torch
 
@@ -158,7 +159,10 @@ class MMDataTransform:
                 self.theta, self.im_size, self.ngal, kappa
             )
 
-    def __call__(self, kappa: np.ndarray) -> Tuple[float, float, float, float]:
+    def __call__(
+            self, kappa: np.ndarray,
+            gamma: Union[np.ndarray, None] = None
+    ) -> Tuple[float, float, float, float]:
         """Transforms the data.
 
         Note: gt = ground truth. The ground truth is the original kappa simulation from kappaTNG.
@@ -176,9 +180,10 @@ class MMDataTransform:
 
         """
         # Generate observation on the fly.
-        gamma = self.gamma_gen(
-            kappa
-        )  # real kappa here, but gamma_gen adds empty axis so gamma can be complex
+        if gamma is None:
+            gamma = self.gamma_gen(
+                kappa
+            )  # real kappa here, but gamma_gen adds empty axis so gamma can be complex
         ks = self.backward_model(gamma, self.D)
 
         # Format input gt data.
@@ -285,18 +290,26 @@ class HDF5MMDataModule(pl.LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
 
-        self.train_dataset = wlds.HDF5DatasetKappa(
+        std_noise = torch.load(self.cfg.path_to_std_noise)
+        mask = torch.load(self.cfg.path_to_mask)
+        transform = MMDataTransform(self.cfg, test=False)
+
+        self.train_dataset = HDF5MassMappingDataset(
+            transform,
             hdf5_filepath=self.cfg.path_to_train_val_dataset,
             nimgs=self.cfg.nimgs_train,
+            std_noise=std_noise,
+            mask = mask,
             output_shape=self.cfg.im_size,
-            newaxis=True
         )
-        self.val_dataset = wlds.HDF5DatasetKappa(
+        self.val_dataset = HDF5MassMappingDataset(
+            transform,
             hdf5_filepath=self.cfg.path_to_train_val_dataset,
             nimgs=self.cfg.nimgs_val,
             beg_idx=self.cfg.nimgs_train,
+            std_noise=std_noise,
+            mask = mask,
             output_shape=self.cfg.im_size,
-            newaxis=True
         )
         self.test_dataset = None
 

@@ -1,9 +1,9 @@
 #Change checkpoint and sense_map path
-checkpoint_dir: /share/gpu0/jjwhit/mass_map/mm_models/ # Where model will save checkpoints
-data_path: /share/gpu0/jjwhit/kappa_cosmos_simulations/cropped_dataset/ # Path to simulation dataset
-cosmo_dir_path: /home/jjwhit/rcGAN/mass_map_utils/cosmos/ # Path to cosmos information such as mask
-save_path: /share/gpu0/jjwhit/samples/ # where figures and samples will be saved
-fig_path: /share/gpu0/jjwhit/plots/
+checkpoint_dir: /feynman/home/dap/lcs/hl285110/work/Models/kappaTNG/mmgan/checkpoints/ # Where model will save checkpoints
+data_path: # Path to simulation dataset
+cosmo_dir_path: # Path to cosmos information such as mask
+save_path: /feynman/home/dap/lcs/hl285110/work/Models/kappaTNG/mmgan/results/ # where figures and samples will be saved
+fig_path: /feynman/home/dap/lcs/hl285110/work/Models/kappaTNG/mmgan/plots/
 
 # Define the experience
 experience: mass_mapping
@@ -18,7 +18,7 @@ num_z_train: 2
 # Data
 in_chans: 4  # Real+Imag parts from observation + Kaiser squires map
 out_chans: 1 # A real convergence map
-im_size: 300 # Pixel width/height (square iamges)
+im_size: 384 # Pixel width/height (square iamges)
 
 # Optimizer:
 lr: 0.001
@@ -34,4 +34,11 @@ batch_size: 9
 num_epochs: 100
 psnr_gain_tol: 0.25
 
-num_workers: 4
+num_workers: 8
+
+# Custom config
+path_to_train_val_dataset: /feynman/work/dap/lcs/hl285110/Data/kappaTNG_augmented/LP002_augmented_384.hdf5
+path_to_std_noise: /feynman/work/Data/COSMOS/std_noise_384.pt
+path_to_noise: /feynman/work/Data/COSMOS/mask_384.pt
+nimgs_train: 70560
+nimgs_val: 1440

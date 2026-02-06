@@ -3,6 +3,8 @@ import numpy as np
 import torch
 import pathlib
 
+import wlmmuq.data.torch as wlds
+
 
 class MassMappingDataset_Test(torch.utils.data.Dataset):
     """Loads the test data."""
@@ -106,3 +108,14 @@ class MassMappingDataset_Train(torch.utils.data.Dataset):
         data = np.load(self.examples[i], allow_pickle=True).astype(np.float64)
         # Tranform data and generate observations.
         return self.transform(data)
+    
+
+class HDF5MassMappingDataset(wlds.HDF5DatasetMassMapping):
+
+    def __init__(self, transform, *args, **kwargs):
+        super().__init__(*args, newaxis=False, **kwargs)
+        self.transform = transform
+
+    def __getitem__(self, i):
+        kappa, gamma = super().__getitem__(i) # Shape = (nx, ny)
+        return self.transform(kappa, gamma=gamma)
