@@ -14,7 +14,9 @@ from models.archs.mass_map.discriminator import DiscriminatorModel
 from evaluation_scripts.metrics import psnr
 from torchmetrics.functional import peak_signal_noise_ratio
 
-class mmGAN(pl.LightningModule):
+import wlmmuq.models.torch as wlnn
+
+class BaseMMGAN(pl.LightningModule):
     def __init__(self, args, exp_name, num_gpus):
         super().__init__()
         self.args = args # This is the cfg object 
@@ -24,10 +26,8 @@ class mmGAN(pl.LightningModule):
         self.in_chans = args.in_chans + 2  # Two extra dimensions of the added noise 
         self.out_chans = args.out_chans
 
-        self.generator = UNetModel(
-            in_chans=self.in_chans,
-            out_chans=self.out_chans,
-        )
+        self.generator = None
+        self._init_generator()
 
         self.discriminator = DiscriminatorModel(
             in_chans=self.args.in_chans + self.args.out_chans, # Number of channels from x and y
@@ -40,6 +40,9 @@ class mmGAN(pl.LightningModule):
         self.resolution = self.args.im_size
 
         self.save_hyperparameters()  # Save passed values
+
+    def _init_generator(self):
+        raise NotImplementedError
 
     def get_noise(self, num_vectors):
         z = torch.randn(num_vectors, 2, self.resolution, self.resolution, device=self.device)
@@ -81,6 +84,7 @@ class mmGAN(pl.LightningModule):
     def forward(self, y):
         num_vectors = y.size(0)
         noise = self.get_noise(num_vectors)
+        assert self.generator is not None
         samples = self.generator(torch.cat([y, noise], dim=1))
         samples = self.readd_measures(samples, y)     
         return samples
@@ -262,6 +266,7 @@ class mmGAN(pl.LightningModule):
         self.trainer.strategy.barrier()
 
     def configure_optimizers(self):
+        assert self.generator is not None
         opt_g = torch.optim.Adam(
             self.generator.parameters(),
             lr=self.args.lr,
@@ -281,3 +286,20 @@ class mmGAN(pl.LightningModule):
     def on_load_checkpoint(self, checkpoint):
         self.std_mult = checkpoint["beta_std"]
         self.is_good_model = checkpoint["is_valid"]
+
+
+class mmGAN(BaseMMGAN):
+    def _init_generator(self):
+        self.generator = UNetModel(
+            in_chans=self.in_chans,
+            out_chans=self.out_chans,
+        )
+
+
+class mmGANSUNet(BaseMMGAN):
+    def _init_generator(self):
+        self.generator = wlnn.SUNet(
+            map_size=self.args.im_size,
+            in_channels=self.in_chans,
+            out_channels=self.out_chans
+        )
