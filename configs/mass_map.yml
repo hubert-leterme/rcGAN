@@ -6,7 +6,7 @@ save_path: /feynman/home/dap/lcs/hl285110/work/Models/kappaTNG/mmgan/results/ #Â
 fig_path: /feynman/home/dap/lcs/hl285110/work/Models/kappaTNG/mmgan/plots/
 
 # Define the experience
-experience: mass_mapping
+experience: mass_mapping_from_hdf5
 kappa_mean: 0.00015744006243248638 # Value calculated during preprocessing
 kappa_std: 0.02968584954283938 # Value calculated during preprocessing
 
@@ -37,8 +37,8 @@ psnr_gain_tol: 0.25
 num_workers: 8
 
 # Custom config
-path_to_train_val_dataset: /feynman/work/dap/lcs/hl285110/Data/kappaTNG_augmented/LP002_augmented_384.hdf5
-path_to_std_noise: /feynman/work/Data/COSMOS/std_noise_384.pt
-path_to_noise: /feynman/work/Data/COSMOS/mask_384.pt
+path_to_train_val_dataset: /feynman/home/dap/lcs/hl285110/work/Data/kappaTNG_augmented/LP002_augmented_384.hdf5
+path_to_std_noise: /feynman/home/dap/lcs/hl285110/work/Data/COSMOS/std_noise_384.pt
+path_to_mask: /feynman/home/dap/lcs/hl285110/work/Data/COSMOS/mask_384.pt
 nimgs_train: 70560
 nimgs_val: 1440
