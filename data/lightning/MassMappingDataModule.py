@@ -17,13 +17,13 @@ import wlmmuq.data.torch as wlds
 
 
 class MMDataTransform:
-    def __init__(self, args, test=False, theta=5.0, ngal=30):
+    def __init__(self, args, test=False, theta=5.0, ngal=30, mask=None):
         self.args = args
         self.test = test
         self.theta = theta
         self.im_size = args.im_size
         self.ngal = ngal
-        self.mask = None
+        self.mask = mask
         self.std1 = None
         self.std2 = None
         self.D = self.compute_fourier_kernel(self.im_size)
@@ -292,14 +292,14 @@ class HDF5MMDataModule(pl.LightningDataModule):
 
         std_noise = torch.load(self.cfg.path_to_std_noise)
         mask = torch.load(self.cfg.path_to_mask)
-        transform = MMDataTransform(self.cfg, test=False)
+        transform = MMDataTransform(self.cfg, test=False, mask=mask)
 
         self.train_dataset = HDF5MassMappingDataset(
             transform,
             hdf5_filepath=self.cfg.path_to_train_val_dataset,
             nimgs=self.cfg.nimgs_train,
             std_noise=std_noise,
-            mask = mask,
+            mask=mask,
             output_shape=self.cfg.im_size,
         )
         self.val_dataset = HDF5MassMappingDataset(
@@ -308,7 +308,7 @@ class HDF5MMDataModule(pl.LightningDataModule):
             nimgs=self.cfg.nimgs_val,
             beg_idx=self.cfg.nimgs_train,
             std_noise=std_noise,
-            mask = mask,
+            mask=mask,
             output_shape=self.cfg.im_size,
         )
         self.test_dataset = None
