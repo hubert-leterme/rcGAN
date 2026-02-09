@@ -98,7 +98,7 @@ class MMDataTransform:
             kappa (np.ndarray): Convergence field, with shape [N,N].
         """
         F_gamma = np.fft.fft2(gamma)
-        F_kappa = F_gamma / D
+        F_kappa = F_gamma * np.conjugate(D) # Equal to (F_gamma / D) except for index [0, 0]
         F_kappa = np.nan_to_num(F_kappa, nan=0, posinf=0, neginf=0)
         return np.fft.ifft2(F_kappa)  # Allows for complex kappa here
 
