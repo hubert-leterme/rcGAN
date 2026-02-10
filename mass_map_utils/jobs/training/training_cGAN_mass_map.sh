@@ -15,4 +15,4 @@ wandb login wandb_v1_SpNnnnXgJRTtT6yrwUdw7ei3cVL_IpzrrqyAkCvlkKKFXoqDqCGBk9QPGgg
 
 cd /feynman/home/dap/lcs/hl285110/Documents/Code/rcGAN
 
-srun python -u train.py --config ./configs/mass_map.yml --exp-name mmgan_training_real_output --num-gpus 1
+srun python -u train.py --config ./configs/mass_map.yml --exp-name mmgan_training_real_output
