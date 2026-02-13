@@ -8,12 +8,12 @@ from tqdm import tqdm
 from scipy import ndimage
 
 import sys
-sys.path.append("/home/jjwhit/rcGAN/")
+sys.path.append("/feynman/home/dap/lcs/hl285110/Documents/Code/rcGAN")
 
 from mass_map_utils.scripts.ks_utils import pearsoncoeff, psnr, snr, rmse
-from data.lightning.MassMappingDataModule import MMDataModule
+from data.lightning.MassMappingDataModule import MMDataModule, HDF5MMDataModule
 from utils.parse_args import create_arg_parser
-from models.lightning.mmGAN import mmGAN
+from models.lightning.mmGAN import mmGAN, mmGANSUNet
 from pytorch_lightning import seed_everything
 
 
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         cfg = yaml.load(f, Loader=yaml.FullLoader)
         cfg = json.loads(json.dumps(cfg), object_hook=load_object)
 
-    dm = MMDataModule(cfg)
+    dm = HDF5MMDataModule(cfg)
     dm.setup()
     val_loader = dm.val_dataloader()
     best_epoch = -1
@@ -39,11 +39,14 @@ if __name__ == "__main__":
     best_psnr = -1
     best_snr = -1
     best_rmse = 10000000
-    start_epoch = 80  # Will start saving models after 80 epochs
-    end_epoch = cfg.num_epochs
-    mask = np.load(
-        cfg.cosmo_dir_path + "cosmos_mask.npy", allow_pickle=True
-    ).astype(bool)
+    # start_epoch = 80  # Will start saving models after 80 epochs
+    # end_epoch = cfg.num_epochs
+    start_epoch = 30
+    end_epoch = 40
+    mask = torch.load(cfg.path_to_mask).numpy().astype(int)
+    # mask = np.load(
+    #     cfg.cosmo_dir_path + "cosmos_mask.npy", allow_pickle=True
+    # ).astype(bool)
 
     psnr_vals = []
     snr_vals = []
@@ -57,7 +60,7 @@ if __name__ == "__main__":
 
             # Loads the model one epoch at a time
             try:
-                model = mmGAN.load_from_checkpoint(
+                model = mmGANSUNet.load_from_checkpoint(
                     checkpoint_path=cfg.checkpoint_dir
                     + args.exp_name
                     + f"/checkpoint-epoch={epoch}.ckpt"
@@ -66,9 +69,9 @@ if __name__ == "__main__":
                 print(e)
                 continue
 
-            if model.is_good_model == 0:
-                print("NO GOOD: SKIPPING...")
-                continue
+            # if model.is_good_model == 0:
+            #     print("NO GOOD: SKIPPING...")
+            #     continue
 
             model = model.cuda()
             model.eval()
@@ -149,14 +152,14 @@ if __name__ == "__main__":
         print(f"{epoch} | {psnr} | {snr} | {rmse} | {r}")
 
     # Toggle this if you don't want other epochs to be deleted
-    for epoch in range(80, end_epoch):
-        try:
-            if epoch != best_epoch_rmse:
-                os.remove(cfg.checkpoint_dir + args.exp_name + f'/checkpoint-epoch={epoch}.ckpt')
-        except:
-            pass
+    # for epoch in range(80, end_epoch):
+    #     try:
+    #         if epoch != best_epoch_rmse:
+    #             os.remove(cfg.checkpoint_dir + args.exp_name + f'/checkpoint-epoch={epoch}.ckpt')
+    #     except:
+    #         pass
 
-    os.rename(
-        cfg.checkpoint_dir + args.exp_name + f"/checkpoint-epoch={best_epoch_rmse}.ckpt",
-        cfg.checkpoint_dir + args.exp_name + f"/checkpoint_best.ckpt",
-    )
+    # os.rename(
+    #     cfg.checkpoint_dir + args.exp_name + f"/checkpoint-epoch={best_epoch_rmse}.ckpt",
+    #     cfg.checkpoint_dir + args.exp_name + f"/checkpoint_best.ckpt",
+    # )

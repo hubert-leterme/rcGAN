@@ -4,7 +4,7 @@ import types
 import json
 import sys
 import os
-sys.path.append('/home/mars/git/rcGAN/')
+sys.path.append("/feynman/home/dap/lcs/hl285110/Documents/Code/rcGAN")
 
 import pytorch_lightning as pl
 
