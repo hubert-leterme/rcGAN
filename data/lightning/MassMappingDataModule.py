@@ -13,8 +13,6 @@ from typing import Tuple, Union
 import pathlib
 import torch
 
-import wlmmuq.data.torch as wlds
-
 
 class MMDataTransform:
     def __init__(self, args, test=False, theta=5.0, ngal=30, mask=None):
@@ -206,8 +204,10 @@ class MMDataTransform:
         normalized_gt = transforms.normalize(
             pt_gt, self.args.kappa_mean, self.args.kappa_std
         )  # Shape (1, H, W)
-        normalized_ks, mean_ks, std_ks = transforms.normalize_instance(pt_ks)
-        normalized_ks = transforms.normalize(pt_ks, mean_ks, std_ks)
+        # normalized_ks, mean_ks, std_ks = transforms.normalize_instance(pt_ks)
+        normalized_ks = transforms.normalize(
+            pt_ks, self.args.kappa_mean, self.args.kappa_std
+        )
 
         normalized_gamma = torch.cat([normalized_gamma, normalized_ks], dim=0)
 
