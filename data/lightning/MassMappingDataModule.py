@@ -29,23 +29,26 @@ class MMDataTransform:
         self.D = self.compute_fourier_kernel(self.im_size)
 
         # Load mask and std dev for noise
-        try:
-            if self.args.cosmo_dir_path is not None:
-                self.mask = np.load(
-                    self.args.cosmo_dir_path + "cosmos_mask.npy", allow_pickle=True
-                ).astype(bool)
-                self.std1 = np.load(
-                    self.args.cosmo_dir_path + "cosmos_std1.npy", allow_pickle=True
-                )
-                self.std2 = np.load(
-                    self.args.cosmo_dir_path + "cosmos_std2.npy", allow_pickle=True
-                )
-        except:
-            print("There is a problem with the mask loading. Proceeding without mask.")
-            self.args.cosmo_dir_path = None
-            self.mask = None
-            self.std1 = None
-            self.std2 = None
+        self.mask = torch.load(self.args.path_to_mask).numpy()
+        self.std1 = torch.load(self.args.path_to_std_noise).numpy()
+        self.std2 = torch.load(self.args.path_to_std_noise).numpy()
+        # try:
+        #     if self.args.cosmo_dir_path is not None:
+        #         self.mask = np.load(
+        #             self.args.cosmo_dir_path + "cosmos_mask.npy", allow_pickle=True
+        #         ).astype(bool)
+        #         self.std1 = np.load(
+        #             self.args.cosmo_dir_path + "cosmos_std1.npy", allow_pickle=True
+        #         )
+        #         self.std2 = np.load(
+        #             self.args.cosmo_dir_path + "cosmos_std2.npy", allow_pickle=True
+        #         )
+        # except:
+        #     print("There is a problem with the mask loading. Proceeding without mask.")
+        #     self.args.cosmo_dir_path = None
+        #     self.mask = None
+        #     self.std1 = None
+        #     self.std2 = None
 
     @staticmethod
     def compute_fourier_kernel(N: int) -> np.ndarray:
