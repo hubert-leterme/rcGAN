@@ -1,7 +1,7 @@
 #Change checkpoint and sense_map path
 checkpoint_dir: /feynman/home/dap/lcs/hl285110/work/Models/kappaTNG/mmgan/checkpoints/ # Where model will save checkpoints
 data_path: # Path to simulation dataset
-cosmo_dir_path: # Path to cosmos information such as mask
+cosmo_dir_path: /feynman/home/dap/lcs/hl285110/Documents/Code/rcGAN/mass_map_utils/cosmos/
 save_path: /feynman/home/dap/lcs/hl285110/work/Models/kappaTNG/mmgan/results/ # where figures and samples will be saved
 fig_path: /feynman/home/dap/lcs/hl285110/work/Models/kappaTNG/mmgan/plots/
 
