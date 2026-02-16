@@ -118,4 +118,5 @@ class HDF5MassMappingDataset(wlds.HDF5DatasetMassMapping):
 
     def __getitem__(self, i):
         kappa, gamma = super().__getitem__(i) # Shape = (nx, ny)
+        gamma = -torch.conj(gamma) # For reproducibility
         return self.transform(kappa, gamma=gamma)
