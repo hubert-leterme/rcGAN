@@ -312,8 +312,19 @@ class mmGAN(BaseMMGAN):
 
 class mmGANSUNet(BaseMMGAN):
     def _init_generator(self):
-        self.generator = wlnn.SUNet(
+        # Instantiate SUNet but disable the automatic mean-centering
+        # (ModelMixin adds a Meancentering layer by default). The original
+        # UNet-based implementation didn't enforce mean-centering, so we
+        # remove it here to make the two generators compatible.
+        model = wlnn.SUNet(
             map_size=self.args.im_size,
             in_channels=self.in_chans,
             out_channels=self.out_chans
         )
+        # Disable the additional_outlayer (Meancentering) added by ModelMixin
+        if hasattr(model, 'additional_outlayer'):
+            model.additional_outlayer = None
+        # Ensure no eval-time ReLU is enforced
+        if hasattr(model, 'outrelu_eval'):
+            model.outrelu_eval = None
+        self.generator = model
