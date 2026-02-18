@@ -131,6 +131,48 @@ class BaseMMGAN(pl.LightningModule):
 
         return self.args.gp_weight * gradient_penalty
 
+    def _compute_nan_metrics(self):
+        """Return fraction of NaNs in trainable parameters and their gradients.
+
+        Returns:
+            (param_nan_frac, grad_nan_frac): fractions in [0, 1].
+        """
+        total_params = 0
+        nan_params = 0
+        for p in self.parameters():
+            if p.requires_grad:
+                num = p.numel()
+                total_params += num
+                try:
+                    nan_params += int(torch.isnan(p).sum().item())
+                except Exception:
+                    # if p is on cpu/cuda and can't be inspected, skip
+                    pass
+
+        total_grads = 0
+        nan_grads = 0
+        for p in self.parameters():
+            g = p.grad
+            if g is not None:
+                numg = g.numel()
+                total_grads += numg
+                try:
+                    nan_grads += int(torch.isnan(g).sum().item())
+                except Exception:
+                    pass
+
+        param_nan_frac = float(nan_params) / float(total_params) if total_params > 0 else 0.0
+        grad_nan_frac = float(nan_grads) / float(total_grads) if total_grads > 0 else 0.0
+        return param_nan_frac, grad_nan_frac
+
+    def on_after_backward(self):
+        """Hook called by Lightning after backward; log gradient/parameter NaN metrics."""
+        param_nan_frac, grad_nan_frac = self._compute_nan_metrics()
+        # Log to the tracker (e.g., wandb) via Lightning's logger
+        # Use step-level logging
+        self.log('nan/params_frac', param_nan_frac, prog_bar=False, on_step=True, on_epoch=False)
+        self.log('nan/grads_frac', grad_nan_frac, prog_bar=False, on_step=True, on_epoch=False)
+
     def drift_penalty(self, real_pred):
         return 0.001 * torch.mean(real_pred ** 2)
 
@@ -157,6 +199,22 @@ class BaseMMGAN(pl.LightningModule):
             g_loss = self.adversarial_loss_generator(y, gens)
             g_loss += self.l1_std_p(avg_recon, gens, x)
 
+            # Log NaN metrics for generator outputs and loss
+            try:
+                numel = float(gens.numel())
+                nan_elems = float(torch.isnan(gens).sum().item())
+                gen_nan_frac = nan_elems / numel if numel > 0 else 0.0
+            except Exception:
+                gen_nan_frac = 0.0
+            self.log('nan/generator_output_frac', gen_nan_frac, prog_bar=False, on_step=True, on_epoch=False)
+
+            try:
+                g_loss_isnan = float(torch.isnan(g_loss).item())
+            except Exception:
+                # If g_loss is not a scalar tensor, convert safely
+                g_loss_isnan = 0.0
+            self.log('nan/g_loss_isnan', g_loss_isnan, prog_bar=False, on_step=True, on_epoch=False)
+
             self.log('g_loss', g_loss, prog_bar=True)
 
             return g_loss
@@ -171,6 +229,21 @@ class BaseMMGAN(pl.LightningModule):
             d_loss = self.adversarial_loss_discriminator(fake_pred, real_pred)
             d_loss += self.gradient_penalty(x_hat, x, y)
             d_loss += self.drift_penalty(real_pred)
+
+            # Log NaN metrics for discriminator outputs and loss
+            try:
+                numel_xhat = float(x_hat.numel())
+                nan_xhat = float(torch.isnan(x_hat).sum().item())
+                xhat_nan_frac = nan_xhat / numel_xhat if numel_xhat > 0 else 0.0
+            except Exception:
+                xhat_nan_frac = 0.0
+            self.log('nan/generator_xhat_frac', xhat_nan_frac, prog_bar=False, on_step=True, on_epoch=False)
+
+            try:
+                d_loss_isnan = float(torch.isnan(d_loss).item())
+            except Exception:
+                d_loss_isnan = 0.0
+            self.log('nan/d_loss_isnan', d_loss_isnan, prog_bar=False, on_step=True, on_epoch=False)
 
             self.log('d_loss', d_loss, prog_bar=True)
 
