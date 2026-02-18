@@ -277,7 +277,21 @@ class BaseMMGAN(pl.LightningModule):
             lr=self.args.lr,
             betas=(self.args.beta_1, self.args.beta_2)
         )
-        return [opt_d, opt_g], []
+        optimizers = [opt_g, opt_d]
+        if self.args.lr_scheduler:
+            sched_g = torch.optim.lr_scheduler.StepLR(
+                opt_g, step_size=self.args.lr_step_size,
+                gamma=self.args.lr_drop_rate
+            )
+            sched_d = torch.optim.lr_scheduler.StepLR(
+                opt_d, step_size=self.args.lr_step_size,
+                gamma=self.args.lr_drop_rate
+            )
+            schedulers = [sched_g, sched_d]
+        else:
+            schedulers = []
+
+        return optimizers, schedulers
 
     def on_save_checkpoint(self, checkpoint):
         checkpoint["beta_std"] = self.std_mult

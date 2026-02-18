@@ -22,6 +22,9 @@ im_size: 384 # Pixel width/height (square iamges)
 
 # Optimizer:
 lr: 0.001
+lr_scheduler: true
+lr_drop_rate: 0.1 # For learning rate scheduler
+lr_step_size: 25  # For learning rate scheduler (update every xx epochs)
 beta_1: 0
 beta_2: 0.99
 
