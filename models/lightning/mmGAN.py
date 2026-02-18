@@ -93,6 +93,8 @@ class BaseMMGAN(pl.LightningModule):
         return fake_pred.mean() - real_pred.mean()
 
     def adversarial_loss_generator(self, y, gens):
+        # No need to input x because the component of the adversarial loss involving
+        # x is a constant wrt the generator's parameters (see eq. (15), $\theta$)
         fake_pred = torch.zeros(size=(y.shape[0], self.args.num_z_train), device=self.device)
         for k in range(y.shape[0]):
             cond = torch.zeros(
